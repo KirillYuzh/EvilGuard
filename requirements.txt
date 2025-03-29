@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+python-multipart
+requests
+paramiko
+SCPClient
+scp
+PyQt6
+pyinstaller
