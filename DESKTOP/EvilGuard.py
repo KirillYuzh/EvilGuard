@@ -151,7 +151,7 @@ class AntivirusApp(QMainWindow):
         try:
             with open(file_path, 'rb') as f:
                 files = {'file': f}
-                response = requests.post("http://localhost:8000/upload", files=files)
+                response = requests.post("http://172.20.10.4:8000/upload", files=files)
                 
                 if response.status_code != 200:
                     raise Exception("Ошибка на стороне сервера.")
@@ -299,7 +299,7 @@ class AntivirusApp(QMainWindow):
         msg.layout().setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
         msg.setMinimumSize(600, 400)
         
-        msg.exec()
+        msg.exec()о
 
     def show_error_message(self, message):
         self.show_critical_message("Ошибка", message)
