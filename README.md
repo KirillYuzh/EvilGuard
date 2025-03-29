@@ -1,5 +1,7 @@
 # EvilGuard by Hex Bomb team
 
+## Кирилл Южаков, Ксения Кравчук, Панков Георгий
+### Проектный практикум (февраль-март 2025)
 
 > [!NOTE]
 > ### Логика работы
@@ -10,7 +12,7 @@
 > - Отправляем отчёт пользователю
 
 
-### Скачать:
+# Скачать:
 - Windows:
 [Версия для windows](https://github.com/dwolke-up/AntivirusByHexBomb/releases/download/main/EvilGuard-Windows.exe)
 
