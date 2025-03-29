@@ -1,0 +1,249 @@
+name: Build and Release EvilGuard
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - '[0-9]+.[0-9]+'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Build Windows EXE
+        working-directory: ./DESKTOP
+        run: |
+          pip install pyinstaller PyQt6
+          pyinstaller --onefile --windowed --icon=icon.ico EvilGuard.py
+          mkdir ..\\release
+          copy dist\\EvilGuard.exe ..\\release\\EvilGuard-Windows.exe
+
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: EvilGuard-Windows
+          path: ./release/EvilGuard-Windows.exe
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller PyQt6 requests certifi
+          
+      - name: Build application
+        working-directory: ./DESKTOP
+        run: |
+          # Чистим предыдущие сборки
+          rm -rf dist build
+          
+          # Создаем entitlements файл
+          cat > entitlements.plist <<EOL
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>com.apple.security.cs.allow-jit</key>
+              <true/>
+              <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+              <true/>
+              <key>com.apple.security.cs.disable-library-validation</key>
+              <true/>
+              <key>com.apple.security.cs.allow-dyld-environment-variables</key>
+              <true/>
+              <key>com.apple.security.automation.apple-events</key>
+              <true/>
+          </dict>
+          </plist>
+          EOL
+          
+          # Собираем приложение со всеми зависимостями
+          pyinstaller \
+            --windowed \
+            --icon=icon.icns \
+            --osx-bundle-identifier "com.evilguard.app" \
+            --osx-entitlements-file entitlements.plist \
+            --add-data "$(python -c 'import certifi; print(certifi.where())'):certifi" \
+            --hidden-import requests \
+            --collect-all requests \
+            --noconfirm \
+            EvilGuard.py
+          
+          # Проверяем сборку
+          if [ ! -d "dist/EvilGuard.app" ]; then
+            echo "❌ App build failed!"
+            exit 1
+          fi
+          
+          # Подписываем с правами
+          codesign --force --deep --sign - \
+            --entitlements entitlements.plist \
+            --options runtime \
+            --timestamp \
+            dist/EvilGuard.app
+          
+          # Проверяем подпись
+          codesign -dv --verbose=4 dist/EvilGuard.app || exit 1
+          
+      - name: Create DMG with auto-fix
+        working-directory: ./DESKTOP
+        run: |
+          mkdir -p ../release dmg_contents
+          
+          # Копируем приложение и создаем скрипт
+          cp -R dist/EvilGuard.app dmg_contents/
+          
+          cat > dmg_contents/Install.command <<'EOL'
+          #!/bin/bash
+          
+          # Удаляем старую версию
+          rm -rf /Applications/EvilGuard.app 2>/dev/null
+          
+          # Копируем и исправляем права
+          echo "Copying application..."
+          cp -R /Volumes/EvilGuard/EvilGuard.app /Applications
+          
+          echo "Fixing permissions..."
+          xattr -cr /Applications/EvilGuard.app
+          chmod +x /Applications/EvilGuard.app/Contents/MacOS/EvilGuard
+          
+          # Запускаем
+          echo "Launching application..."
+          open -a /Applications/EvilGuard.app
+          EOL
+          
+          chmod +x dmg_contents/Install.command
+          
+          # Создаем DMG
+          hdiutil create \
+            -volname "EvilGuard" \
+            -srcfolder dmg_contents \
+            -ov \
+            -format UDZO \
+            -fs HFS+ \
+            -imagekey zlib-level=9 \
+            ../release/EvilGuard-MacOS.dmg
+          
+          # Проверяем результат
+          if [ ! -f "../release/EvilGuard-MacOS.dmg" ]; then
+            echo "❌ DMG creation failed!"
+            exit 1
+          fi
+          
+          echo "✅ DMG created successfully"
+          ls -lh ../release/EvilGuard-MacOS.dmg
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: EvilGuard-MacOS
+          path: ./release/EvilGuard-MacOS.dmg
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Build Linux DEB
+        working-directory: ./DESKTOP
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pyqt6 python3-pip
+          pip install pyinstaller PyQt6
+          
+          pyinstaller --onefile --windowed --icon=icon.png EvilGuard.py
+          mkdir -p ../release/deb/usr/local/bin
+          cp dist/EvilGuard ../release/deb/usr/local/bin/
+          
+          mkdir -p ../release/deb/DEBIAN
+          echo "Package: evilguard
+          Version: 1.0
+          Section: security
+          Priority: optional
+          Architecture: amd64
+          Depends: python3, python3-pyqt6
+          Maintainer: Kirill Yuzhakov <kirillyuzhakov2021@yandex.ru>
+          Description: Cross-platform antivirus solution
+          " > ../release/deb/DEBIAN/control
+          
+          dpkg-deb --build ../release/deb ../release/EvilGuard-Linux.deb
+          ls -la ../release/  # Проверка создания файла
+
+      - name: Upload Linux Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: EvilGuard-Linux
+          path: ./release/EvilGuard-Linux.deb
+
+  create-release:
+      needs: [build-windows, build-macos, build-linux]
+      runs-on: ubuntu-latest
+      permissions:
+        contents: write  # Необходимо для создания релиза
+      steps:
+        - name: Download all artifacts
+          uses: actions/download-artifact@v4
+          with:
+            path: ./artifacts
+            
+        - name: Verify artifacts structure
+          run: |
+            echo "### Artifacts structure ###"
+            ls -R ./artifacts/
+            
+            # Проверяем наличие всех файлов в правильных подпапках
+            declare -A required_files=(
+              ["Windows"]="./artifacts/EvilGuard-Windows/EvilGuard-Windows.exe"
+              ["MacOS"]="./artifacts/EvilGuard-MacOS/EvilGuard-MacOS.dmg"
+              ["Linux"]="./artifacts/EvilGuard-Linux/EvilGuard-Linux.deb"
+            )
+            
+            for platform in "${!required_files[@]}"; do
+              file="${required_files[$platform]}"
+              if [ ! -f "$file" ]; then
+                echo "❌ Error: Missing $platform artifact at $file"
+                exit 1
+              else
+                echo "✅ Found $platform artifact: $file"
+                ls -lh "$file"
+              fi
+            done
+            
+        - name: Create GitHub Release
+          uses: softprops/action-gh-release@v1
+          with:
+            tag_name: ${{ github.ref_name }}  # Используем имя тега
+            name: "EvilGuard ${{ github.ref_name }}"
+            body: |
+              ### EvilGuard ${{ github.ref_name }}
+              
+              **Downloads:**
+              - [Windows Installer](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/EvilGuard-Windows.exe)
+              - [MacOS Disk Image](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/EvilGuard-MacOS.dmg)
+              - [Linux DEB Package](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/EvilGuard-Linux.deb)
+              
+              **Installation Instructions:**
+              1. Download the appropriate file for your OS
+              2. Follow platform-specific instructions from the INSTALL file
+            draft: false
+            prerelease: false
+            files: |
+              ./artifacts/EvilGuard-Windows/EvilGuard-Windows.exe
+              ./artifacts/EvilGuard-MacOS/EvilGuard-MacOS.dmg
+              ./artifacts/EvilGuard-Linux/EvilGuard-Linux.deb
