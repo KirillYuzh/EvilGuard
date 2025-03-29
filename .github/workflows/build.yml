@@ -233,14 +233,15 @@ jobs:
             body: |
               ### EvilGuard ${{ github.ref_name }}
               
-              **Downloads:**
+              **Ссылки на скачивание:**
               - [Windows Installer](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/EvilGuard-Windows.exe)
               - [MacOS Disk Image](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/EvilGuard-MacOS.dmg)
               - [Linux DEB Package](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/EvilGuard-Linux.deb)
               
-              **Installation Instructions:**
-              1. Download the appropriate file for your OS
-              2. Follow platform-specific instructions from the INSTALL file
+              **Инструкции к скачиванию:**
+              1. Скачайте файл, подходящий для вашей ОС
+              2. Следуйте инструкциям внутри файла INSTALL
+              3. Пользуйтесь с удовольствием!
             draft: false
             prerelease: false
             files: |
