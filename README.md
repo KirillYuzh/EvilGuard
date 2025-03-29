@@ -24,7 +24,7 @@
 
 # Скачать:
 - Windows:
-[Версия для windows](https://github.com/dwolke-up/AntivirusByHexBomb/releases/download/main/EvilGuard-Windows.exe)
+[Версия для windows](https://github.com/KirillYuzh/EvilGuard/releases/download/main/EvilGuard-Windows.exe)
 
 > [!TIP]
 > Если SmartScreen блокирует запуск:
@@ -32,7 +32,7 @@
 > 2. Выберите "Выполнить в любом случае
 
 - MacOS:
-[Версия для macOS](https://github.com/dwolke-up/AntivirusByHexBomb/releases/download/main/EvilGuard-MacOS.dmg)
+[Версия для macOS](https://github.com/KirillYuzh/EvilGuard/releases/download/main/EvilGuard-MacOS.dmg)
 
 > [!TIP]
 > После скачивания ZIP:
@@ -47,7 +47,7 @@
 > ```
 
 - Linux (debian):
-[Версия для debian](https://github.com/dwolke-up/AntivirusByHexBomb/releases/download/main/EvilGuard-Linux.deb)
+[Версия для debian](https://github.com/KirillYuzh/EvilGuard/releases/download/main/EvilGuard-Linux.deb)
 
 > [!TIP]
 > Установка после скачивания:
