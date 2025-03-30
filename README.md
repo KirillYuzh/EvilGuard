@@ -37,7 +37,7 @@
 [Версия для macOS](https://github.com/KirillYuzh/EvilGuard/releases/download/main/EvilGuard-MacOS.dmg)
 
 > [!TIP]
-> После скачивания ZIP:
+> После скачивания:
 > 1. Откройте Terminal
 > 2. Выполните:  
 > ``` bash
