@@ -299,7 +299,7 @@ class AntivirusApp(QMainWindow):
         msg.layout().setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
         msg.setMinimumSize(600, 400)
         
-        msg.exec()о
+        msg.exec()
 
     def show_error_message(self, message):
         self.show_critical_message("Ошибка", message)
