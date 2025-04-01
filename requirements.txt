@@ -7,3 +7,4 @@ SCPClient
 scp
 PyQt6
 pyinstaller
+psutil

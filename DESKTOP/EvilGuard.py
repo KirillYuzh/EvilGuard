@@ -1,3 +1,5 @@
+import os
+import psutil 
 import sys
 import requests
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
@@ -13,7 +15,7 @@ class AntivirusApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('EvilGuard')
-        self.setFixedSize(700, 500)
+        self.setFixedSize(650, 400)
         icon = QIcon()
         pixmap = QPixmap("icon.png") 
         pixmap = pixmap.scaled(256, 256, Qt.AspectRatioMode.KeepAspectRatio, 
@@ -21,6 +23,7 @@ class AntivirusApp(QMainWindow):
         icon.addPixmap(pixmap)
         self.setWindowIcon(icon)
         self.virustotal_data = None
+        self.current_file_path = None  # Для хранения пути к проверяемому файлу
         self.init_ui()
 
     def init_ui(self):
@@ -141,6 +144,7 @@ class AntivirusApp(QMainWindow):
         if not file_path:
             return
 
+        self.current_file_path = file_path  # Сохраняем путь к файлу
         self.loading_bar.show()
         self.btn_upload.setEnabled(False)
         self.status_label.setText("Отправляем файл на сервер...")
@@ -151,8 +155,9 @@ class AntivirusApp(QMainWindow):
         try:
             with open(file_path, 'rb') as f:
                 files = {'file': f}
-                response = requests.post("http://172.20.10.4:8000/upload", files=files)
-                
+                # response = requests.post("http://172.20.10.4:8000/upload", files=files)
+                response = requests.post("http://localhost:8000/upload", files=files)
+
                 if response.status_code != 200:
                     raise Exception("Ошибка на стороне сервера.")
                 
@@ -192,13 +197,108 @@ class AntivirusApp(QMainWindow):
             elif status == "suspicious":
                 self.show_warning_message("Результат проверки", "⚠️ Файл подозрительный, лучше не запускать!")
             elif status == "malicious":
-                self.show_critical_message("Результат проверки", "❌ Это вредоносный файл, запускать нельзя! Рекомендуем его удалить.")
+                self.handle_malicious_file()
                 
         except Exception as e:
             self.loading_bar.hide()
             self.btn_upload.setEnabled(True)
             self.show_error_message(f"Не удалось получить ответ: {e}")
             self.status_label.setText("Ошибка обработки ответа")
+
+    def handle_malicious_file(self):
+        """Обработка вредоносного файла"""
+        # Проверяем, запущен ли файл
+        file_name = os.path.basename(self.current_file_path)
+        is_running = self.check_if_process_running(file_name)
+        
+        message = "❌ Обнаружен вредоносный файл!\n\n"
+        message += "Этот файл представляет угрозу для вашей системы.\n\n"
+        
+        if is_running:
+            message += "⚠️ Внимание: файл в данный момент запущен!\n\n"
+        
+        message += "Удалить этот файл?"
+
+        # Создаем кастомное сообщение с кнопками Да/Нет
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("Вредоносный файл")
+        msg_box.setText(message)
+        msg_box.setIcon(QMessageBox.Icon.Critical)
+        
+        # Создаем и настраиваем кнопки
+        yes_button = msg_box.addButton("Да", QMessageBox.ButtonRole.YesRole)
+        no_button = msg_box.addButton("Нет", QMessageBox.ButtonRole.NoRole)
+        
+        # Настраиваем стиль кнопок
+        yes_button.setStyleSheet("""
+            QPushButton {
+                min-width: 80px;
+                padding: 8px;
+                font-size: 14px;
+                font-family: 'Verdana';
+            }
+        """)
+        no_button.setStyleSheet("""
+            QPushButton {
+                min-width: 80px;
+                padding: 8px;
+                font-size: 14px;
+                font-family: 'Verdana';
+            }
+        """)
+        
+        msg_box.exec()
+
+        if msg_box.clickedButton() == yes_button:
+            self.delete_malicious_file()
+        
+        # В любом случае пытаемся завершить процесс
+        if is_running:
+            self.terminate_process(file_name)
+
+    def check_if_process_running(self, process_name):
+        """Проверяет, запущен ли процесс с указанным именем"""
+        try:
+            for proc in psutil.process_iter(['name']):
+                if proc.info['name'].lower() == process_name.lower():
+                    return True
+            return False
+        except Exception as e:
+            print(f"Ошибка при проверке процессов: {e}")
+            return False
+
+    def terminate_process(self, process_name):
+        """Завершает процесс по имени"""
+        try:
+            for proc in psutil.process_iter(['name', 'pid']):
+                if proc.info['name'].lower() == process_name.lower():
+                    try:
+                        psutil.Process(proc.info['pid']).terminate()
+                        self.show_info_message("Процесс завершен", 
+                                             f"Процесс {process_name} был успешно завершен.")
+                        return True
+                    except Exception as e:
+                        print(f"Ошибка при завершении процесса: {e}")
+                        self.show_warning_message("Ошибка", 
+                                                f"Не удалось завершить процесс {process_name}.")
+            return False
+        except Exception as e:
+            print(f"Ошибка при поиске процессов: {e}")
+            return False
+
+    def delete_malicious_file(self):
+        """Удаляет вредоносный файл"""
+        try:
+            if os.path.exists(self.current_file_path):
+                os.remove(self.current_file_path)
+                self.show_info_message("Файл удален", 
+                                     "Вредоносный файл был успешно удален.")
+                self.current_file_path = None
+            else:
+                self.show_warning_message("Файл не найден", 
+                                         "Файл уже был удален или перемещен.")
+        except Exception as e:
+            self.show_error_message(f"Не удалось удалить файл: {e}")
 
     def show_virustotal_details(self):
         """Отчёт от VirusTotal"""
@@ -231,14 +331,11 @@ class AntivirusApp(QMainWindow):
         text_edit.setFont(font)
         text_edit.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
         
-        # Устанавливаем минимальный размер для QTextEdit
-        text_edit.setMinimumSize(600, 600)  # Можно регулировать под свои нужды
+        text_edit.setMinimumSize(600, 600)
         
-        # Добавляем QTextEdit в QMessageBox
         layout = dialog.layout()
         layout.addWidget(text_edit, 0, 0, 1, layout.columnCount())
         
-        # Настраиваем кнопки
         dialog.setStandardButtons(QMessageBox.StandardButton.Ok)
         ok_button = dialog.button(QMessageBox.StandardButton.Ok)
         ok_button.setMinimumSize(120, 40)
