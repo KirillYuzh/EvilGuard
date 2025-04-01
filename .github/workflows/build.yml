@@ -21,7 +21,7 @@ jobs:
       - name: Build Windows EXE
         working-directory: ./DESKTOP
         run: |
-          pip install pyinstaller PyQt6
+          pip install pyinstaller PyQt6 psutil
           pyinstaller --onefile --windowed --icon=icon.ico EvilGuard.py
           mkdir ..\\release
           copy dist\\EvilGuard.exe ..\\release\\EvilGuard-Windows.exe
