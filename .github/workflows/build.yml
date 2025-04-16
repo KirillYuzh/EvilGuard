@@ -21,11 +21,10 @@ jobs:
       - name: Build Windows EXE
         working-directory: ./DESKTOP
         run: |
-          pip install pyinstaller PyQt6 psutil
+          pip install pyinstaller PyQt6
           pyinstaller --onefile --windowed --icon=icon.ico EvilGuard.py
           mkdir ..\\release
           copy dist\\EvilGuard.exe ..\\release\\EvilGuard-Windows.exe
-
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -184,7 +183,6 @@ jobs:
           
           dpkg-deb --build ../release/deb ../release/EvilGuard-Linux.deb
           ls -la ../release/  # Проверка создания файла
-
       - name: Upload Linux Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -233,15 +231,14 @@ jobs:
             body: |
               ### EvilGuard ${{ github.ref_name }}
               
-              **Ссылки на скачивание:**
+              **Downloads:**
               - [Windows](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/EvilGuard-Windows.exe)
               - [MacOS](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/EvilGuard-MacOS.dmg)
               - [Linux](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/EvilGuard-Linux.deb)
               
-              **Инструкции к скачиванию:**
-              1. Скачайте файл, подходящий для вашей ОС
-              2. Следуйте инструкциям внутри файла INSTALL
-              3. Пользуйтесь с удовольствием!
+              **Installation Instructions:**
+              1. Download the appropriate file for your OS
+              2. Follow platform-specific instructions from the INSTALL file
             draft: false
             prerelease: false
             files: |

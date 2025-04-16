@@ -16,7 +16,7 @@ scan_stats = defaultdict(int)
 
 app = FastAPI()
 
-VIRUSTOTAL_API_KEY = "8958add810162195c3a9f355ef728c5a3652301a778f7ac405f015772032112b" # Вставьте свой api ключ))
+VIRUSTOTAL_API_KEY = "8958add810162195c3a9f355ef728c5a3652301a778f7ac405f015772032112b"
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
