@@ -52,7 +52,7 @@ jobs:
           # Чистим предыдущие сборки
           rm -rf dist build
           
-          # Создаем entitlements файл
+          # Entitlements файл
           cat > entitlements.plist <<EOL
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -72,7 +72,7 @@ jobs:
           </plist>
           EOL
           
-          # Собираем приложение со всеми зависимостями
+          # Сборка
           pyinstaller \
             --windowed \
             --icon=icon.icns \
@@ -86,7 +86,7 @@ jobs:
           
           # Проверяем сборку
           if [ ! -d "dist/EvilGuard.app" ]; then
-            echo "❌ App build failed!"
+            echo "App build failed!"
             exit 1
           fi
           
@@ -139,13 +139,13 @@ jobs:
             -imagekey zlib-level=9 \
             ../release/EvilGuard-MacOS.dmg
           
-          # Проверяем результат
+          # Проверяем 
           if [ ! -f "../release/EvilGuard-MacOS.dmg" ]; then
-            echo "❌ DMG creation failed!"
+            echo "DMG creation failed!"
             exit 1
           fi
           
-          echo "✅ DMG created successfully"
+          echo "DMG created successfully"
           ls -lh ../release/EvilGuard-MacOS.dmg
       
       - name: Upload artifact
@@ -182,7 +182,6 @@ jobs:
           " > ../release/deb/DEBIAN/control
           
           dpkg-deb --build ../release/deb ../release/EvilGuard-Linux.deb
-          ls -la ../release/  # Проверка создания файла
       - name: Upload Linux Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -193,7 +192,7 @@ jobs:
       needs: [build-windows, build-macos, build-linux]
       runs-on: ubuntu-latest
       permissions:
-        contents: write  # Необходимо для создания релиза
+        contents: write
       steps:
         - name: Download all artifacts
           uses: actions/download-artifact@v4
@@ -215,10 +214,10 @@ jobs:
             for platform in "${!required_files[@]}"; do
               file="${required_files[$platform]}"
               if [ ! -f "$file" ]; then
-                echo "❌ Error: Missing $platform artifact at $file"
+                echo "Error: Missing $platform artifact at $file"
                 exit 1
               else
-                echo "✅ Found $platform artifact: $file"
+                echo "Found $platform artifact: $file"
                 ls -lh "$file"
               fi
             done
@@ -226,7 +225,7 @@ jobs:
         - name: Create GitHub Release
           uses: softprops/action-gh-release@v1
           with:
-            tag_name: ${{ github.ref_name }}  # Используем имя тега
+            tag_name: ${{ github.ref_name }}
             name: "EvilGuard ${{ github.ref_name }}"
             body: |
               ### EvilGuard ${{ github.ref_name }}
