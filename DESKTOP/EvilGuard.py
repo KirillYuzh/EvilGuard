@@ -144,7 +144,7 @@ class AntivirusApp(QMainWindow):
         if not file_path:
             return
 
-        self.current_file_path = file_path  # Сохраняем путь к файлу
+        self.current_file_path = file_path 
         self.loading_bar.show()
         self.btn_upload.setEnabled(False)
         self.status_label.setText("Отправляем файл на сервер...")
@@ -191,11 +191,11 @@ class AntivirusApp(QMainWindow):
             else:
                 self.btn_details.hide()
             
-            # Показываем краткий статус
+            # Краткий статус
             if status == "clean":
-                self.show_info_message("Результат проверки", "✅ Файл чистый, можно запускать!")
+                self.show_info_message("Результат проверки", "Файл чистый, можно запускать!")
             elif status == "suspicious":
-                self.show_warning_message("Результат проверки", "⚠️ Файл подозрительный, лучше не запускать!")
+                self.show_warning_message("Результат проверки", "Файл подозрительный, лучше не запускать!")
             elif status == "malicious":
                 self.handle_malicious_file()
                 
@@ -211,25 +211,23 @@ class AntivirusApp(QMainWindow):
         file_name = os.path.basename(self.current_file_path)
         is_running = self.check_if_process_running(file_name)
         
-        message = "❌ Обнаружен вредоносный файл!\n\n"
+        message = "Обнаружен вредоносный файл!\n\n"
         message += "Этот файл представляет угрозу для вашей системы.\n\n"
         
         if is_running:
-            message += "⚠️ Внимание: файл в данный момент запущен!\n\n"
+            message += "Внимание: файл в данный момент запущен!\n\n"
         
         message += "Удалить этот файл?"
 
-        # Создаем кастомное сообщение с кнопками Да/Нет
+        # Сообщение с кнопками Да/Нет
         msg_box = QMessageBox()
         msg_box.setWindowTitle("Вредоносный файл")
         msg_box.setText(message)
         msg_box.setIcon(QMessageBox.Icon.Critical)
         
-        # Создаем и настраиваем кнопки
         yes_button = msg_box.addButton("Да", QMessageBox.ButtonRole.YesRole)
         no_button = msg_box.addButton("Нет", QMessageBox.ButtonRole.NoRole)
         
-        # Настраиваем стиль кнопок
         yes_button.setStyleSheet("""
             QPushButton {
                 min-width: 80px;
