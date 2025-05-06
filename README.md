@@ -29,7 +29,7 @@
 > 2. Выполните:  
 > ``` bash
 >   xattr -cr EvilGuard-MacOS.dmg  # Удаляет карантинные атрибуты
->   open EvilGuard-MacOS.dmg       # Открывает образ
+>   open EvilGuard-MacOS.dmg
 >   cd /Volumes/EvilGuard/
 >   chmod +x Install.command
 >   ./Install.command
