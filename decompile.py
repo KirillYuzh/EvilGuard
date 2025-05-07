@@ -20,7 +20,7 @@ def decompile_with_retdec(exe_path: str, output_path: str) -> str:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            timeout=60  # Таймаут 60 секунд
+            timeout=60 
         )
         
         if result.returncode != 0:
