@@ -42,7 +42,7 @@ def check_multiple_hashes(hashes: list) -> dict:
     url = "https://www.virustotal.com/vtapi/v2/file/report"
     params = {
         'apikey': VIRUSTOTAL_API_KEY,
-        'resource': ','.join(hashes[:25])  #  25 хешей в одном запросе
+        'resource': ','.join(hashes[:25])  # 25 хешей в одном запросе
     }
     return requests.get(url, params=params).json()
 
@@ -56,10 +56,9 @@ def calculate_file_hash(file_path: str) -> str:
 
 def check_virustotal(file_path: str) -> dict:
     """Проверяет файл через VirusTotal с кешированием и статистикой"""
-    # Увеличиваем счетчик проверок
     scan_stats['total_checks'] += 1
     
-    # Сначала получаем хеш файла
+    # Получаем хеш файла
     file_hash = calculate_file_hash(file_path)
     
     # Пытаемся получить существующий отчет
@@ -139,16 +138,16 @@ def analyze_code(file_path: str) -> dict:
 
         # Удаление временных файлов декомпиляции
         try:
-            # Основной декомпилированный файл
+            # Основной файл
             if os.path.exists(decompiled_path):
                 os.remove(decompiled_path)
             
-            # Другие возможные временные файлы RetDec
+            # Другие файлы RetDec
             temp_files = [
-                "decompiled.ll",            # LLVM IR
-                "decompiled.bc",            # Bitcode
-                "decompiled.dsm",           # Дизассемблированный код
-                "decompiled.config.json",   # Конфигурационный файл
+                "decompiled.ll",           
+                "decompiled.bc",            
+                "decompiled.dsm",           
+                "decompiled.config.json",   
             ]
             
             for temp_file in temp_files:
