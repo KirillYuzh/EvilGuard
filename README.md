@@ -18,7 +18,7 @@
 > [!TIP]
 > Если SmartScreen блокирует запуск:
 > 1. Нажмите "Подробнее" в предупреждении
-> 2. Выберите "Выполнить в любом случае
+> 2. Выберите "Выполнить в любом случае"
 
 - MacOS:
 [Версия для macOS](https://github.com/KirillYuzh/EvilGuard/releases/download/main/EvilGuard-MacOS.dmg)
@@ -43,7 +43,3 @@
 > ``` bash
 > sudo dpkg -i EvilGuard.deb
 > ```
-
-P.S.
-<a id="server-ip"></a>
-[*](#server-ip-instruction) На данный момент приложение настроено на работу с сервером по адресу 172.20.10.4:8000
