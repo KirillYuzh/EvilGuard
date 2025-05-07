@@ -23,7 +23,7 @@ class AntivirusApp(QMainWindow):
         icon.addPixmap(pixmap)
         self.setWindowIcon(icon)
         self.virustotal_data = None
-        self.current_file_path = None  # Для хранения пути к проверяемому файлу
+        self.current_file_path = None 
         self.init_ui()
 
     def init_ui(self):
@@ -308,15 +308,15 @@ class AntivirusApp(QMainWindow):
         details_text += f"Обнаружено: {self.virustotal_data.get('positives', 0)} из {self.virustotal_data.get('total', 0)} антивирусов\n\n"
         
         if "scans" in self.virustotal_data:
-            details_text += "📊 Результаты сканирования:\n"
+            details_text += "Результаты сканирования:\n"
             scans = self.virustotal_data.get("scans", {})
             for scanner, result in scans.items():
                 if result.get("detected"):
-                    details_text += f"  🔴 {scanner}: {result.get('result', 'Обнаружена угроза')}\n"
+                    details_text += f"  🔴 {scanner}: {result.get('result', 'Обнаружено вредоносное поведение')}\n"
                 else:
                     details_text += f"  🟢 {scanner}: Чистый\n"
         
-        details_text += f"\n🔗 Ссылка на отчёт: {self.virustotal_data.get('permalink', 'N/A')}"
+        details_text += f"\nСсылка на отчёт: {self.virustotal_data.get('permalink', 'N/A')}"
         
         dialog = QMessageBox(self)
         dialog.setWindowTitle("Подробный отчёт VirusTotal")
